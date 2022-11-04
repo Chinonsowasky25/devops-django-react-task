@@ -1,0 +1,42 @@
+version: "3.2"
+services:
+  sqlite3:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./db/:/root/db/
+  api:
+    restart: always
+    container_name: backend
+    command : python manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - ./api/api/settings.py
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - sqlite3
+    networks:
+      - db-net
+
+  frontend:
+    restart: always
+    command : npm start
+    container_name: front
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    depends_on:
+      - project
+    networks:
+      - db-net
+
+networks:
+  db-net:
+    driver: bridge
